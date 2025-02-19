@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "ad protect agent"
+version = "0.1.0"
+description = "AD Protect Agent"
+authors = ["Example <example@hotmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ldap3 = "^2.9.1"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+black = "^25.1.0"
+mypy = "^1.15.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

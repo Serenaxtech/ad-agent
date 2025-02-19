@@ -1,0 +1,7 @@
+setup.py
+configreader/__init__.py
+configreader/configReader.py
+configreader.egg-info/PKG-INFO
+configreader.egg-info/SOURCES.txt
+configreader.egg-info/dependency_links.txt
+configreader.egg-info/top_level.txt
