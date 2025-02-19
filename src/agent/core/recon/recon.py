@@ -1,3 +1,4 @@
+from datetime import datetime
 from ldapconnector import ldapConnector
 import logging
 from types import MethodType
@@ -9,7 +10,36 @@ class Recon:
     def __init__(self, config_obj, ldapconnector_obj):
         self.config_obj = config_obj
         self.ldapconnector_obj = ldapconnector_obj
+
+        self._configure_logging()
+
         self._dynamically_create_methods()
+    
+    
+    def _configure_logging(self):
+        """Set up logging to a file with a timestamped filename."""
+        # Generate filename: dd-yyyy-logfilename.log
+        timestamp = datetime.now().strftime("%d-%Y")
+        log_filename = f"{timestamp}-recon-module.log"
+
+        # Check if the logger already has a FileHandler for this filename
+        for handler in ldaprecon_logger.handlers:
+            if (
+                isinstance(handler, logging.FileHandler)
+                and handler.baseFilename.endswith(log_filename)
+            ):
+                break
+        else:
+            # Create a new FileHandler if none exists for this filename
+            file_handler = logging.FileHandler(log_filename)
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
+            file_handler.setFormatter(formatter)
+            ldaprecon_logger.addHandler(file_handler)
+
+        # Set the logger level (optional, adjust as needed)
+        ldaprecon_logger.setLevel(logging.INFO)
 
     def _dynamically_create_methods(self):
         """Create methods dynamically based on queries defined in the config."""
