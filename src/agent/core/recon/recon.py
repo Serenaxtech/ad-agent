@@ -7,23 +7,15 @@ from configReader import Config
 from ldap3 import SUBTREE, BASE, LEVEL
 from logging_utils import configure_logging
 
-ldaprecon_logger = logging.getLogger(__name__)
+recon_logger = logging.getLogger(__name__)
 
 class Recon:
-    RESERVED_METHODS = ['config_obj', 'ldapconnector_obj']
-    
     def __init__(self, config: Config, ldap_connector: LdapConnector):
         self.config = config
         self.ldap = ldap_connector
-        configure_logging(ldaprecon_logger, "recon-module")
-        self._validate_ldap_connection()
+        self.dynamic_methods = []  # Track successfully created methods
+        configure_logging(recon_logger, "recon-module")
         self._create_dynamic_methods()
-
-    def _validate_ldap_connection(self) -> None:
-        """Ensure working LDAP connection before proceeding"""
-        if not self.ldap.ldap.bound:
-            ldaprecon_logger.error("LDAP connection not established")
-            raise ConnectionError("LDAP server connection failed")
 
     def _create_dynamic_methods(self) -> None:
         """Safe dynamic method creation with validation"""
@@ -37,16 +29,16 @@ class Recon:
                 params = self._parse_query_section(section)
                 self._bind_dynamic_method(method_name, **params)
             except Exception as e:
-                ldaprecon_logger.error(f"Failed creating method {method_name}: {str(e)}")
+                recon_logger.error(f"Failed creating method {method_name}: {str(e)}")
 
     def _is_valid_method_name(self, name: str) -> bool:
         """Validate method name safety"""
         if not name.isidentifier():
-            ldaprecon_logger.warning(f"Invalid method name: {name}")
+            recon_logger.warning(f"Invalid method name: {name}")
             return False
             
-        if hasattr(self, name) or name in self.RESERVED_METHODS:
-            ldaprecon_logger.error(f"Method name conflict: {name}")
+        if hasattr(self, name):
+            recon_logger.error(f"Method name conflict: {name}")
             return False
             
         return True
@@ -54,12 +46,15 @@ class Recon:
     def _parse_query_section(self, section: str) -> Dict[str, Any]:
         """Safe parameter parsing with validation"""
         params = {
-            'ldapfilter': self.config.configFileParser.get(section, 'filter'),
+            'ldapfilter': self.config.configFileParser.get(section, 'filter', fallback='(objectClass=*)'),
             'attributes': self._parse_attributes(section),
-            'base': self.config.configFileParser.get(section, 'base'),
+            'base': self.config.configFileParser.get(section, 'base', fallback=None),
             'scope': self._parse_scope(section),
-            'as_json': self.config.configFileParser.getboolean(section, 'as_json', fallback=False)
+            'as_json': True
+            # 'as_json': self.config.configFileParser.getboolean(section, 'as_json', fallback=True)
         }
+
+
         
         if not params['ldapfilter']:
             raise ValueError(f"Missing filter in section {section}")
@@ -82,43 +77,47 @@ class Recon:
         def dynamic_method(
             self, 
             override_filter: Optional[str] = None,
+            override_attributes: Optional[list] = None,  # Fixed typo here
             override_base: Optional[str] = None,
+            override_scope: Optional[str] = None,
             as_json: Optional[bool] = None
-        ) -> Iterable[Dict]:
+        ):
             """Dynamically generated query method"""
-            ldaprecon_logger.info(f"Executing {method_name}")
+            recon_logger.info(f"Executing {method_name}")
             
             try:
                 return self.ldap.query(
                     ldapfilter=override_filter or params['ldapfilter'],
-                    attributes=params['attributes'],
+                    attributes=override_attributes or params['attributes'],  # Fixed here
                     base=override_base or params['base'],
-                    scope=params['scope'],
+                    scope=override_scope or params['scope'],
                     as_json=as_json if as_json is not None else params['as_json']
                 )
             except Exception as e:
-                ldaprecon_logger.error(f"Query {method_name} failed: {str(e)}")
-                raise  # Or return empty collection based on error policy
+                recon_logger.error(f"Query {method_name} failed: {str(e)}")
+                raise
 
         # Add type annotations dynamically
         dynamic_method.__annotations__ = {
             'override_filter': Optional[str],
+            'override_attributes': Optional[list],  # Fixed here
             'override_base': Optional[str],
+            'override_scope': Optional[str],
             'as_json': Optional[bool],
-            'return': Iterable[Dict]
+            'return': json
         }
         
+        # Bind the method once and track it
         setattr(self, method_name, MethodType(dynamic_method, self))
-
-    def __dir__(self):
-        """Improve IDE discoverability of dynamic methods"""
-        return super().__dir__() + [m[len('query_'):] for m in self.config.get_query_sections()]
+        self.dynamic_methods.append(method_name)  # Track the method name
     
 
 if __name__ == '__main__':
     try:
         # Initialize configuration
         config = Config(config_file='./config.ini')
+        # print(config.get_query_sections())
+        # print(config.getADDomains())
         
         # Get first domain configuration (for demo purposes)
         domain = config.getADDomains()[0]
@@ -133,6 +132,7 @@ if __name__ == '__main__':
             method="NTLM"
         )
 
+        # print(ldap_conn.query("(objectClass=Computer)", as_json=True))
         # Initialize Recon module
         recon = Recon(config, ldap_conn)
 
@@ -140,10 +140,10 @@ if __name__ == '__main__':
         print("\n=== Testing Dynamic Methods ===")
         
         # Get list of generated methods
+
         query_methods = [m for m in dir(recon) 
                     if m.startswith('get_') and callable(getattr(recon, m))]
         
-        print(query_methods)
         
         if not query_methods:
             print("No query methods found!")
@@ -160,7 +160,7 @@ if __name__ == '__main__':
                 results = method()
                 
                 # Convert generator to list for demonstration
-                results_list = list(results)
+                results_list = json.loads(results)
                 
                 # Print first 3 results as sample
                 print(f"First 3 results from {method_name}:")
