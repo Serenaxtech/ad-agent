@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "ldap"
+version = "0.1.0"
+description = "An ldap custom package"
+authors = ["Serena <serena@example.com>"]
+readme = "README.md"
+packages = [{include = "ldap", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+ldap3-bleeding-edge = "^2.10.1.1337"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

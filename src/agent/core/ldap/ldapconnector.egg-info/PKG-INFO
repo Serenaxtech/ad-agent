@@ -1,9 +1,0 @@
-Metadata-Version: 2.2
-Name: ldapconnector
-Version: 0.1
-Summary: An ldap custom package
-Author: Example
-Requires-Dist: ldap3
-Dynamic: author
-Dynamic: requires-dist
-Dynamic: summary

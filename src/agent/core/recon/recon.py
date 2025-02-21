@@ -2,10 +2,10 @@ import json
 import logging
 from types import MethodType
 from typing import List, Optional, Iterable, Dict, Any
-from ldapConnector import LdapConnector
-from configReader import Config
+from ldap.ldap import LdapConnector
+from config.config import Config
 from ldap3 import SUBTREE, BASE, LEVEL
-from logging_utils import configure_logging
+from logging_custom.logging_custom import configure_logging
 
 recon_logger = logging.getLogger(__name__)
 
@@ -129,7 +129,7 @@ if __name__ == '__main__':
             domain=domain,
             username=domain_config['username'].split('\\')[-1],  # Extract username from DOMAIN\user
             password=domain_config['password'],
-            method="NTLM"
+            method=domain_config['auth-method']
         )
 
         # print(ldap_conn.query("(objectClass=Computer)", as_json=True))

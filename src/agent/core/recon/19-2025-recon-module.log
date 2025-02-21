@@ -1,6 +1,0 @@
-2025-02-19 23:27:07,298 - __main__ - ERROR - Failed creating method get_all_windows_servers: 'Config' object has no attribute 'parser'
-2025-02-19 23:27:07,298 - __main__ - ERROR - Failed creating method get_all_users: 'Config' object has no attribute 'parser'
-2025-02-19 23:31:31,426 - __main__ - ERROR - Failed creating method get_all_windows_servers: No option 'base' in section: 'query_get_all_windows_servers'
-2025-02-19 23:31:31,426 - __main__ - ERROR - Failed creating method get_all_users: No option 'base' in section: 'query_get_all_users'
-2025-02-19 23:33:35,825 - __main__ - ERROR - Failed creating method get_all_windows_servers: No option 'base' in section: 'query_get_all_windows_servers'
-2025-02-19 23:33:35,826 - __main__ - ERROR - Failed creating method get_all_users: No option 'base' in section: 'query_get_all_users'

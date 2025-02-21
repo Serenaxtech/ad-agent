@@ -1,5 +1,8 @@
+import json
+import logging
 from sys import exit, _getframe
 from ssl import CERT_NONE
+from logging_custom.logging_custom import configure_logging
 from ldap3 import (
     Server,
     Connection,
@@ -35,6 +38,8 @@ from ldap3 import ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES
 import ldap3
 
 ALL = [ALL_ATTRIBUTES, ALL_OPERATIONAL_ATTRIBUTES]
+
+ldap_logger = logging.getLogger(__name__)
 
 class LdapConnector():
     def __init__(self,
@@ -72,6 +77,8 @@ class LdapConnector():
         Returns:
             list: a list of strings representing the header columns
         """
+        configure_logging(ldap_logger, "ldap-module")
+        ldap_logger.info("Starting LDAP Module")
         self.domain = domain
         self.server_string = server_string
         self.base = base
@@ -94,7 +101,7 @@ class LdapConnector():
         self.fqdn = ".".join(
             map(
                 lambda x: x.replace("DC=", ""),
-                filter(lambda x: x.startwith("DC"), self.base_dn.split(",")),
+                filter(lambda x: x.startswith("DC"), self.base_dn.split(",")),
             )
         )
         self.search_scope = SUBTREE
@@ -217,20 +224,47 @@ class LdapConnector():
                 )
 
                 if len(self.ldap.entries) == 0:
-                    print("I should log no info retrieved as anon")
+                    ldap_logger.info("I should log no info retrieved as anon")
         except LDAPSocketOpenError:
             print(f"I should log that we are unable to open connection with {self.server_string}")
         except LDAPSocketSendError:
             print(f"I should log unable to open connection with {self.server_string}, maybe LDAPS is not enabled ")
     
+    def convert_ldap_value(self, value):
+        if isinstance(value, bytes):
+            try:
+                # Attempt to format as SID
+                return format_sid(value)
+            except Exception:
+                try:
+                    # Attempt to decode as UTF-8
+                    return value.decode('utf-8')
+                except UnicodeDecodeError:
+                    # Fallback to hexadecimal representation
+                    return value.hex()
+        else:
+            return value
+
     def ldapQueryResult(self, data):
         if "dn" in data:
-            result = data["attributes"]
-            result["dn"] = result["dn"]
-            return dict(result)
+            attributes = data["attributes"]
+            processed_attributes = {}
+            for key, value in attributes.items():
+                if isinstance(value, list):
+                    processed_list = []
+                    for item in value:
+                        processed_item = self.convert_ldap_value(item)
+                        processed_list.append(processed_item)
+                    processed_attributes[key] = processed_list
+                else:
+                    processed_item = self.convert_ldap_value(value)
+                    processed_attributes[key] = processed_item
+            processed_attributes['dn'] = data['dn']
+            return processed_attributes
+        return None
 
 
-    def query(self, ldapfilter: str, attributes=[], base=None, scope=None):
+    def query(self, ldapfilter: str, attributes=[], base=None, scope=None, as_json=False):
         """
         A method to perform a query to the LDAP server and return the results as a generator.
         
@@ -247,20 +281,31 @@ class LdapConnector():
 
         try:
             entry_generator = self.ldap.extend.standard.paged_search(
-                search_base = base or self.base_dn,
-                search_filter = ldapfilter,
-                search_scope = scope or self.search_scope,
-                attributes = attributes,
-                controls = self.controls,
-                paged_size = self.page_size,
-                generator = True,
+                search_base=base or self.base_dn,
+                search_filter=ldapfilter,
+                search_scope=scope or self.search_scope,
+                attributes=attributes,
+                controls=self.controls,
+                paged_size=self.page_size,
+                generator=True,
             )
         except LDAPOperationResult as e:
-            print("I should log an error")
+            print(f"LDAP query error: {e}")
+            return json.dumps([]) if as_json else iter(())
         except LDAPAttributeError as e:
-            if not _getframe().f_back.f_code.co_name == "get_laps":
-                print("I Should log some error")
-        
-        return filter(lambda x: x is not None, map(self.ldapQueryResult, entry_generator))
+            print(f"LDAP attribute error: {e}")
+            return json.dumps([]) if as_json else iter(())
 
-    pass
+        processed_generator = filter(lambda x: x is not None, map(self.ldapQueryResult, entry_generator))
+
+        if as_json:
+            entries = list(processed_generator)
+            return json.dumps(entries, default=str)
+        else:
+            return processed_generator
+
+
+if __name__ == '__main__':
+    ldap_connect = LdapConnector("ldap://192.168.8.103", domain="adlab.local", username="ldapuser", password="UserPass1234!")
+    query_result = ldap_connect.query(ldapfilter="(objectClass=user)", as_json=True)
+    print(query_result)

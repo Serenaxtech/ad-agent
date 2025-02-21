@@ -1,8 +1,0 @@
-setup.py
-ldapconnector/__init__.py
-ldapconnector/ldapConnector.py
-ldapconnector.egg-info/PKG-INFO
-ldapconnector.egg-info/SOURCES.txt
-ldapconnector.egg-info/dependency_links.txt
-ldapconnector.egg-info/requires.txt
-ldapconnector.egg-info/top_level.txt

@@ -1,5 +1,6 @@
 [tool.poetry]
 name = "ad protect agent"
+package-mode = false
 version = "0.1.0"
 description = "AD Protect Agent"
 authors = ["Example <example@hotmail.com>"]
@@ -8,7 +9,9 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 ldap3-bleeding-edge = "^2.10.1.1337"
-
+logging-custom = {path = "src/agent/internal/logging-custom", develop = true}
+config = {path = "src/agent/internal/config", develop = true}
+ldap = {path = "src/agent/core/ldap", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
