@@ -17,3 +17,6 @@ poetry run pytest --cov=my_package --cov-report=term-missing
 # Docs
 poetry run sphinx-apidoc -o docs/source src/
 poetry run make -C docs html
+
+## Agent Auth Process:
+<img src="docs/images/AgentAuthProcess.svg" alt="SVG Image" width="200" />
