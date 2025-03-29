@@ -11,9 +11,9 @@ Performing audits to ensure compliance with standard security measures.
 # Dev
 poetry add --dev pytest black mypy
 
-# tests
+# Tests
 poetry run pytest --cov=my_package --cov-report=term-missing
 
-# docs
+# Docs
 poetry run sphinx-apidoc -o docs/source src/
 poetry run make -C docs html

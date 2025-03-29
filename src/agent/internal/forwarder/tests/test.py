@@ -1,11 +1,12 @@
 import json
+# from agent.internal.forwarder.src.forwarder import HTTPForwarder, ForwarderError 
 from forwarder import HTTPForwarder, ForwarderError 
 # Example proxy settings (optional)
-proxy_url = "http://localhost:8080"  # Replace with your proxy URL or set to None if no proxy is needed
-proxy_auth = {"username": "", "password": ""}  # Replace with your proxy credentials or set to None
+#proxy_url = "http://localhost:8080"  # Replace with your proxy URL or set to None if no proxy is needed
+#proxy_auth = {"username": "", "password": ""}  # Replace with your proxy credentials or set to None
 
-# proxy_url = None
-# proxy_auth = None 
+proxy_url = None
+proxy_auth = None 
 
 # Initialize the HTTPForwarder
 forwarder = HTTPForwarder(proxy_url=proxy_url, proxy_auth=proxy_auth)

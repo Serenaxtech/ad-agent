@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "forwarder"
+version = "0.1.0"
+description = "A package for the forwarder"
+authors = ["Serena <serena@example.com>"]
+readme = "README.md"
+packages = [{include = "forwarder", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.32.3"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
