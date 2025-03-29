@@ -19,4 +19,4 @@ poetry run sphinx-apidoc -o docs/source src/
 poetry run make -C docs html
 
 ## Agent Auth Process:
-<img src="docs/images/AgentAuthProcess.svg" alt="SVG Image" width="200" />
+<img src="docs/images/AgentAuthProcess.svg" alt="SVG Image" width="600" />
