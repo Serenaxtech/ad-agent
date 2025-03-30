@@ -115,6 +115,7 @@ async def run_scan(scan_type: str) -> None:
 def forward_result(base_url: str, endpoint: str, proxy_config: Dict[str, str], agent_config: Dict[str, str], scan_name: str, scan_result: str) -> None:
     try:
         agent_id = agent_config["agent-id"]
+        agent_token = agent_config["auth-token"]
 
         proxy_url = normalize_proxy_value(proxy_config.get("proxy-url", ""))
         proxy_auth = normalize_proxy_value(proxy_config.get("proxy-auth", ""))
@@ -127,10 +128,16 @@ def forward_result(base_url: str, endpoint: str, proxy_config: Dict[str, str], a
             "agent_id": agent_id
         })
 
-        headers = {'Content-Type': 'application/json'}
+        headers = {
+            'Content-Type': 'application/json',
+            'x-agent-id': agent_id,
+            'x-agent-token': agent_token
+        }
 
         response = forwarder.forward_request("POST", f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}", headers=headers, data=payload)
 
+        # this should be replaced by proper logging using the custom
+        # looging module
         print("Response Status Code:", response.status_code)
         print("Response Body:", response.text)
 
