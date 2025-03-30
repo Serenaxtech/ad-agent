@@ -1,13 +1,15 @@
 import json
 import os
-from typing import Optional, Dict
+import argparse
+import asyncio
+from typing import Optional, Dict, Tuple, List
 
 # Agent Internal Packages
 from config.config import Config
 from authenticator import AgentAuthChecker
 from forwarder import HTTPForwarder, ForwarderError
 
-
+VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap']
 
 def find_config_file() -> Optional[str]:
     """
@@ -38,26 +40,25 @@ def find_config_file() -> Optional[str]:
 
     return None
 
-def read_config():
+def read_config() -> Tuple[Dict, Dict]:
     config_filename = find_config_file()
-    
-    if config_filename == None:
+
+    if config_filename is None:
         # I should replace this with proper logging
         print("Config file does not exist")
+        return {}, {}
     
-    else:
-        config_test = Config(config_file=config_filename)
-        config_json = config_test.parseToJson()
-        config_queries = config_test.get_query_sections()
-        
-        print("Domain Configurations:")
-        print(json.dumps(config_json, indent=2))
-        
-        print("\nQuery Sections:")
-        print(config_queries)
-    
-    return config_queries, config_json
+    config_test = Config(config_file=config_filename)
+    config_json = config_test.parseToJson()
+    config_queries = config_test.get_query_sections()
 
+    print("Domain Configurations:")
+    print(json.dumps(config_json, indent=2))
+
+    print("\nQuery Sections:")
+    print(config_queries)
+
+    return config_queries, config_json
 
 def authenticate_agent(base_url: str, proxy_config: Dict[str, str], agent_config: Dict[str, str]) -> bool:
     """
@@ -107,22 +108,61 @@ def authenticate_agent(base_url: str, proxy_config: Dict[str, str], agent_config
         print(f"Authentication failed: {e}")
         return False
 
+def parse_arguments() -> List[str]:
+    """
+    Parses command line arguments to determine one or more scan types.
 
-def main_loop():
+    Returns:
+        List[str]: A list of selected scan types.
+
+    Raises:
+        SystemExit: If any invalid scan types are provided.
+    """
+    parser = argparse.ArgumentParser(description="NetProtect Agent CLI")
+    parser.add_argument(
+        "-s", "--scan",
+        type=str,
+        required=True,
+        help=f"Comma-separated list of scan types to perform. Options: {', '.join(VALID_SCAN_TYPES)}"
+    )
+    args = parser.parse_args()
+
+    scan_types = [scan.strip() for scan in args.scan.split(',') if scan.strip()]
+    invalid_types = [scan for scan in scan_types if scan not in VALID_SCAN_TYPES]
+
+    if invalid_types:
+        parser.error(f"Invalid scan type(s): {', '.join(invalid_types)}. Valid options: {', '.join(VALID_SCAN_TYPES)}")
+
+    return scan_types
+
+async def run_scan(scan_type: str) -> None:
+    """
+    Simulate running a scan by printing its name asynchronously.
+
+    Args:
+        scan_type (str): The type of scan to simulate.
+    """
+    print(f"Running scan: {scan_type}")
+    await asyncio.sleep(1)  # Simulate async operation
+
+def main_loop() -> None:
+    scan_types = parse_arguments()
     config_queries, config_json = read_config()
-    is_authenticated =  authenticate_agent("http://localhost:3000", config_json["proxy"], config_json["agent"])
+    if not config_json:
+        exit(-1)
+
+    is_authenticated = authenticate_agent("http://localhost:3000", config_json.get("proxy", {}), config_json.get("agent", {}))
 
     if is_authenticated:
-        # I should replace this with proper logging using the logging library
-        print("Authenticated")
+        print(f"Authenticated. Ready to perform scan(s): {', '.join(scan_types)}")
     else:
-        # I should replace this with proper logging using the logging library
         print("Unauthenticated")
         exit(-1)
-    
-    while True:
-        pass
+
+    async def perform_scans():
+        await asyncio.gather(*(run_scan(scan) for scan in scan_types))
+
+    asyncio.run(perform_scans())
 
 if __name__ == '__main__':
     main_loop()
-
