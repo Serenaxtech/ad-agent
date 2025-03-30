@@ -13,6 +13,7 @@ logging-custom = {path = "src/agent/internal/logging-custom", develop = true}
 config = {path = "src/agent/internal/config", develop = true}
 ldap = {path = "src/agent/core/ldap", develop = true}
 forwarder = {path = "src/agent/internal/forwarder", develop = true}
+authenticator = {path = "src/agent/internal/authenticator", develop = true}
 requests = "^2.32.3"
 
 [tool.poetry.group.dev.dependencies]

@@ -1,4 +1,4 @@
-from authenticator import AgentAuthChecker
+from agent.internal.authenticator.src.authenticator.authenticator import AgentAuthChecker
 
 def check_agent_authentication():
     base_url = "http://localhost:3000" 
