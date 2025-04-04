@@ -31,7 +31,7 @@ class AgentAuthChecker:
 
         :return: True if the agent is authenticated, False otherwise.
         """
-        url = f"{self.base_url}/api/v1/agent"
+        url = f"{self.base_url.rstrip('/')}/api/v1/agent"
         headers = {
             "x-agent-token": self.agent_token,
             "x-agent-id": self.agent_id,
