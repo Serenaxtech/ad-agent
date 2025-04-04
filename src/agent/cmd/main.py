@@ -150,7 +150,10 @@ def main_loop() -> None:
     if not config_json:
         exit(-1)
 
-    is_authenticated = authenticate_agent("http://localhost:3000", "/", config_json.get("proxy", {}), config_json.get("agent", {}))
+    base_url = config_json['backend-api'].get('base-api')
+    base_endpoint = config_json['backend-api'].get('base-endpoint')
+
+    is_authenticated = authenticate_agent(base_url, "/", config_json.get("proxy", {}), config_json.get("agent", {}))
 
     if is_authenticated:
         print(f"Authenticated. Ready to perform scan(s): {', '.join(scan_types)}")
@@ -164,7 +167,7 @@ def main_loop() -> None:
     asyncio.run(perform_scans())
 
     forward_result(
-        base_url="http://localhost:3000/api/v1",
+        base_url=base_url + base_endpoint,
         endpoint="/scan/",
         proxy_config=config_json.get("proxy", {}),
         agent_config=config_json.get("agent", {}),
