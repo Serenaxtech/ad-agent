@@ -6,8 +6,10 @@ from typing import Optional, Dict, Tuple, List
 
 # Agent Internal Packages
 from config.config import Config
+from ldap.ldap import LdapConnector
 from authenticator import AgentAuthChecker
 from forwarder import HTTPForwarder, ForwarderError
+# from recon import recon
 
 VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap']
 
@@ -53,9 +55,9 @@ def read_config() -> Tuple[Dict, Dict]:
         print("Config file does not exist")
         return {}, {}
     
-    config_test = Config(config_file=config_filename)
-    config_json = config_test.parseToJson()
-    config_queries = config_test.get_query_sections()
+    config_reader = Config(config_file=config_filename)
+    config_json = config_reader.parseToJson()
+    config_queries = config_reader.get_query_sections()
 
     print("Domain Configurations:")
     print(json.dumps(config_json, indent=2))
@@ -143,6 +145,87 @@ def forward_result(base_url: str, endpoint: str, proxy_config: Dict[str, str], a
 
     except (KeyError, ForwarderError) as e:
         print(f"Error forwarding scan result: {e}")
+
+def perform_recon(config_json, ):
+    try:
+        # Initialize configuration
+        config = Config(config_file='./config.ini')
+        # print(config.get_query_sections())
+        # print(config.getADDomains())
+        
+        # Get first domain configuration (for demo purposes)
+        domain = config.getADDomains()[0]
+        domain_config = config.parseToJson()[domain]
+
+        # Initialize LDAP connection
+        ldap_conn = LdapConnector(
+            server_string=f"ldap://{domain_config.get('ldap-server', '192.168.8.103')}",
+            domain=domain,
+            username=domain_config['username'].split('\\')[-1],  # Extract username from DOMAIN\user
+            password=domain_config['password'],
+            method=domain_config['auth-method']
+        )
+
+        # print(ldap_conn.query("(objectClass=Computer)", as_json=True))
+        # Initialize Recon module
+        recon = Recon(config, ldap_conn)
+
+        # Test dynamic query methods
+        print("\n=== Testing Dynamic Methods ===")
+        
+        # Get list of generated methods
+
+        query_methods = [m for m in dir(recon) 
+                    if m.startswith('get_') and callable(getattr(recon, m))]
+        
+        
+        if not query_methods:
+            print("No query methods found!")
+            exit(1)
+
+        # Execute all found query methods
+        for method_name in query_methods:
+            print(f"\nExecuting {method_name}():")
+            
+            try:
+                method = getattr(recon, method_name)
+                
+                # Execute with default parameters
+                results = method()
+                
+                # Convert generator to list for demonstration
+                results_list = json.loads(results)
+                
+                # Print first 3 results as sample
+                print(f"First 3 results from {method_name}:")
+                for idx, item in enumerate(results_list[:3]):
+                    print(f"{idx+1}: {json.dumps(item, indent=2)}")
+                    
+                # Full results count
+                print(f"Total results: {len(results_list)}")
+                
+                # Test JSON output
+                json_results = method(as_json=True)
+                print(f"\nJSON output sample (first 100 chars):")
+                print(json_results[:100] + "...")
+                
+            except Exception as e:
+                print(f"Error in {method_name}: {str(e)}")
+                continue
+
+        # Test error handling
+        print("\n=== Testing Error Handling ===")
+        try:
+            print("Attempting invalid query...")
+            invalid_results = recon.get_all_users(override_filter="(invalidFilter)")
+            list(invalid_results)  # Force generator execution
+        except Exception as e:
+            print(f"Properly handled error: {str(e)}")
+
+    except Exception as e:
+        logging.error(f"Critical test failure: {str(e)}")
+        exit(1)
+
 
 def main_loop() -> None:
     scan_types = parse_arguments()

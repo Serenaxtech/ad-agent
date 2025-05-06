@@ -306,6 +306,6 @@ class LdapConnector():
 
 
 if __name__ == '__main__':
-    ldap_connect = LdapConnector("ldap://192.168.8.108", domain="adlab.local", username="ldapuser", password="UserPass1234!")
+    ldap_connect = LdapConnector("ldap://192.168.8.110", domain="adlab.local", username="ldapuser", password="UserPass1234!")
     query_result = ldap_connect.query(ldapfilter="(objectClass=*)", as_json=True)
     print(query_result)

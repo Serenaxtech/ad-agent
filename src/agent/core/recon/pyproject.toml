@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "recon"
+version = "0.1.0"
+description = "A custom internal recon package"
+authors = ["serena <serena@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

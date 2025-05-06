@@ -1,14 +1,14 @@
 [tool.poetry]
-name = "authenticator"
+name = "kerberos"
 version = "0.1.0"
-description = "A custom package for the agent authentication"
+description = "A kerberos attack custom package"
 authors = ["Serena <serena@example.com>"]
 readme = "README.md"
-packages = [{include = "authenticator", from = "src"}]
+packages = [{include = "kerberos", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-requests = "^2.32.3"
+ldap3-bleeding-edge = "^2.10.1.1337"
 
 
 [build-system]
