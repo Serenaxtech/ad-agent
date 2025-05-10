@@ -1,0 +1,1 @@
+{'hostname': '192.168.8.113', 'port_open': True, 'anonymous_access': True, 'banner': '220 (vsFTPd 3.0.5)', 'ftp_bounce': False, 'allows_active_mode': True, 'allows_passive_mode': True, 'clear_text_credentials': True, 'directory_listing': ['pub'], 'version': 'vsftpd 3.0.5)', 'vulnerabilities': ['Anonymous Access Allowed'], 'error': None}

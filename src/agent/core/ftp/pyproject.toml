@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "ftp"
+version = "0.1.0"
+description = "FTP vulnerability scanning module for AD Protect Agent"
+authors = ["Serena Ridany <example@hotmail.com>"]
+readme = "README.md"
+packages = [{include = "ftp", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
