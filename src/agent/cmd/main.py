@@ -2,6 +2,7 @@ import json
 import os
 import argparse
 import asyncio
+import logging
 from typing import Optional, Dict, Tuple, List
 
 # Agent Internal Packages
@@ -9,9 +10,18 @@ from config.config import Config
 from ldap.ldap import LdapConnector
 from authenticator import AgentAuthChecker
 from forwarder import HTTPForwarder, ForwarderError
+from ftp.ftp import FTPScanner
+from kerberos import Kerberos
+# from recon import Recon
+
+from logging_custom.logging_custom import configure_logging
 # from recon import recon
 
-VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap']
+netprotect_logger = logging.getLogger(__name__)
+configure_logging(netprotect_logger, "netprotect-module")
+netprotect_logger.info("NetProtect initialized")
+
+VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap', 'ftp']
 
 def normalize_proxy_value(value: Optional[str]) -> Optional[str]:
     """
@@ -52,20 +62,22 @@ def read_config() -> Tuple[Dict, Dict]:
     config_filename = find_config_file()
 
     if config_filename is None:
-        print("Config file does not exist")
+        netprotect_logger.error("Config file does not exist")
         return {}, {}
     
     config_reader = Config(config_file=config_filename)
     config_json = config_reader.parseToJson()
     config_queries = config_reader.get_query_sections()
 
-    print("Domain Configurations:")
-    print(json.dumps(config_json, indent=2))
+    netprotect_logger.info("Successfully read configuration file")
 
-    print("\nQuery Sections:")
-    print(config_queries)
+    # print("Domain Configurations:")
+    # print(json.dumps(config_json, indent=2))
 
-    return config_queries, config_json
+    # print("\nQuery Sections:")
+    # print(config_queries)
+
+    return config_reader, config_queries, config_json
 
 def authenticate_agent(base_url: str, endpoint: str, proxy_config: Dict[str, str], agent_config: Dict[str, str]) -> bool:
     try:
@@ -110,9 +122,47 @@ def parse_arguments() -> List[str]:
 
     return scan_types
 
-async def run_scan(scan_type: str) -> None:
-    print(f"Running scan: {scan_type}")
-    await asyncio.sleep(1)
+async def run_scan(scan_type: str, ldap_conn) -> Dict:
+    """Run a specific scan type and return the results
+    
+    Args:
+        scan_type (str): Type of scan to perform
+        ldap_conn: LDAP connection object
+        
+    Returns:
+        Dict: Scan results in the format {"scan_name": scan_type, "scan_result": result}
+    """
+    netprotect_logger.info(f"Running scan: {scan_type}")
+    scan_result = {}
+    
+    if scan_type == 'ftp':
+        try:
+            # Initialize and run FTP scanner
+            ftp_scanner = FTPScanner(ldap_conn)
+            scan_result = ftp_scanner.scan_network_for_ftp(as_json=False)
+            # print(scan_result)
+        except Exception as e:
+            netprotect_logger.error(f"Error during FTP scan: {e}")
+            scan_result = {"error": str(e)}
+    
+    elif scan_type == 'ldap':
+        scan_result = ldap_conn.query(ldapfilter="(objectClass=*)", as_json=True)
+        print(scan_result)
+
+    elif scan_type == 'kerberos':
+        kerberos_scanner = Kerberos(ldap_conn)
+        scan_result = kerberos_scanner.run_all_scans(as_json=False)
+
+    else:
+        # Placeholder for other scan types
+        await asyncio.sleep(1)
+        scan_result = {"status": "not implemented"}
+    
+    return {
+        "scan_module": scan_type,
+        "scan_result": scan_result
+    }
+
 
 def forward_result(base_url: str, endpoint: str, proxy_config: Dict[str, str], agent_config: Dict[str, str], scan_name: str, scan_result: str) -> None:
     try:
@@ -138,13 +188,12 @@ def forward_result(base_url: str, endpoint: str, proxy_config: Dict[str, str], a
 
         response = forwarder.forward_request("POST", f"{base_url.rstrip('/')}/{endpoint.lstrip('/')}", headers=headers, data=payload)
 
-        # this should be replaced by proper logging using the custom
-        # looging module
-        print("Response Status Code:", response.status_code)
-        print("Response Body:", response.text)
+        # Fix the logging calls by using f-strings
+        netprotect_logger.info(f"Response Status Code: {response.status_code}")
+        netprotect_logger.info(f"Response Body: {response.text}")
 
     except (KeyError, ForwarderError) as e:
-        print(f"Error forwarding scan result: {e}")
+        netprotect_logger.error(f"Error forwarding scan result: {e}")
 
 def perform_recon(config_json, ):
     try:
@@ -229,34 +278,59 @@ def perform_recon(config_json, ):
 
 def main_loop() -> None:
     scan_types = parse_arguments()
-    config_queries, config_json = read_config()
+    config_reader, config_queries, config_json = read_config()
+
     if not config_json:
         exit(-1)
 
+    # print(config_json)
     base_url = config_json['backend-api'].get('base-api')
     base_endpoint = config_json['backend-api'].get('base-endpoint')
 
     is_authenticated = authenticate_agent(base_url, "/", config_json.get("proxy", {}), config_json.get("agent", {}))
 
     if is_authenticated:
-        print(f"Authenticated. Ready to perform scan(s): {', '.join(scan_types)}")
+        netprotect_logger.info(f"Authenticated. Ready to perform scan(s): {', '.join(scan_types)}")
     else:
-        print("Unauthenticated")
+        netprotect_logger.error("Agent is unauthenticated")
         exit(-1)
 
-    async def perform_scans():
-        await asyncio.gather(*(run_scan(scan) for scan in scan_types))
+    # Initialize LDAP connection
+    domain = config_reader.getADDomains()[0]
+    domain_config = config_reader.parseToJson()[domain]
 
-    asyncio.run(perform_scans())
-
-    forward_result(
-        base_url=base_url + base_endpoint,
-        endpoint="/scan/",
-        proxy_config=config_json.get("proxy", {}),
-        agent_config=config_json.get("agent", {}),
-        scan_name=", ".join(scan_types),
-        scan_result="{kerberos: kerberoastable}"
+    ldap_conn = LdapConnector(
+        server_string=f"ldap://192.168.8.112",
+        domain=domain,
+        username=domain_config['username'].split('\\')[-1],
+        password=domain_config['password'],
+        method=domain_config['auth-method']
     )
+
+    async def perform_scans(ldap_conn):
+        scan_results = await asyncio.gather(*(run_scan(scan, ldap_conn) for scan in scan_types))
+        
+        #print(scan_results)
+
+        # Combine all scan results into a single dictionary
+        combined_results = {}
+        for result in scan_results:
+            scan_name = result["scan_module"]
+            scan_result = result["scan_result"]
+            combined_results[scan_name] = scan_result
+        
+        # Forward the combined results
+        forward_result(
+            base_url=base_url + base_endpoint,
+            endpoint="/scan/",
+            proxy_config=config_json.get("proxy", {}),
+            agent_config=config_json.get("agent", {}),
+            scan_name="combined_scan",
+            scan_result=json.dumps(combined_results)
+        )
+
+    asyncio.run(perform_scans(ldap_conn))
+
 
 if __name__ == '__main__':
     main_loop()
