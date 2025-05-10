@@ -297,6 +297,7 @@ class LdapConnector():
             return json.dumps([]) if as_json else iter(())
 
         processed_generator = filter(lambda x: x is not None, map(self.ldapQueryResult, entry_generator))
+        print(type(processed_generator))
 
         if as_json:
             entries = list(processed_generator)

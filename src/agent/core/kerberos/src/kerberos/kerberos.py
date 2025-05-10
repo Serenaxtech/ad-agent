@@ -85,3 +85,30 @@ class Kerberos:
         attributes = ["sAMAccountName", "dNSHostName", "msDS-AllowedToActOnBehalfOfOtherIdentity", "objectClass"]
         kerberos_logger.debug(f"Querying for Resource-Based Constrained Delegation targets with filter: {ldap_filter}")
         return self.ldap.query(ldapfilter=ldap_filter, attributes=attributes, as_json=as_json)
+
+    def run_all_scans(self, as_json=True) -> Dict[str, Any]:
+        """
+        Runs all available Kerberos-related scans and returns combined results.
+        
+        Args:
+            as_json (bool): Whether to return results as a JSON string or dictionary
+            
+        Returns:
+            Dict or str: Combined results from all scans, either as a dictionary or JSON string
+        """
+        kerberos_logger.info("Starting comprehensive Kerberos scan")
+        
+        scan_results = {
+            "kerberoastable_users": json.loads(self.getKerberoastableUsers(as_json=True)),
+            "asreproast_users": json.loads(self.getASREPRoastableUsers(as_json=True)),
+            "domain_encryption": json.loads(self.getDomainEncryptionPolicies(as_json=True)),
+            "unconstrained_delegation": json.loads(self.getUnconstrainedDelegation(as_json=True)),
+            "constrained_delegation": json.loads(self.getConstrainedDelegation(as_json=True)),
+            "resource_based_constrained_delegation": json.loads(self.getResourceBasedConstrainedDelegation(as_json=True))
+        }
+        
+        kerberos_logger.info("Completed comprehensive Kerberos scan")
+        
+        if as_json:
+            return json.dumps(scan_results)
+        return scan_results

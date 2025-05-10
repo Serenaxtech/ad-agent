@@ -57,21 +57,30 @@ class Config:
         """Get all query-related sections safely"""
         return [s for s in self.configFileParser.sections() if s.startswith('query_')]
 
-    def getADDomains(self) -> List[str]:
-        """Get list of valid AD domain sections, excluding queries"""
-        domains = [
+    def getNonQuerySections(self) -> List[str]:
+        """Get list of all non-query sections"""
+        sections = [
             section for section in self.configFileParser.sections()
             if not section.startswith('query_')
+        ]
+        config_logger.info(f"Retrieved {len(sections)} non-query sections from config")
+        return sections
+
+    def getADDomains(self) -> List[str]:
+        """Get list of valid AD domain sections, excluding queries and system sections"""
+        domains = [
+            section for section in self.configFileParser.sections()
+            if not section.startswith('query_') and not section in ['agent', 'backend-api', 'proxy']
         ]
         config_logger.info(f"Retrieved {len(domains)} AD domains from config")
         return domains
 
     def parseToJson(self) -> Dict:
-        """Convert DOMAIN sections to JSON format, excluding queries"""
+        """Convert all non-query sections to JSON format"""
         config_dict = {}
-        for domain in self.getADDomains():
-            config_dict[domain] = dict(self.configFileParser[domain].items())
-            config_logger.debug(f"Processed domain section: {domain}")
+        for section in self.getNonQuerySections():
+            config_dict[section] = dict(self.configFileParser[section].items())
+            config_logger.debug(f"Processed section: {section}")
         return config_dict
     
     def write(self, config_data: dict) -> None:
