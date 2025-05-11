@@ -8,7 +8,7 @@ def configure_logging(logger: logging.Logger, filename_suffix: str) -> None:
     log_dir = os.path.join(os.getcwd(), 'logs')
     os.makedirs(log_dir, exist_ok=True)
 
-    timestamp = datetime.now().strftime("%d-%Y")
+    timestamp = datetime.now().strftime("%d-%m-%Y")
     log_filename = f"{timestamp}-{filename_suffix}.log"
     log_path = os.path.join(log_dir, log_filename)
     abs_log_path = os.path.abspath(log_path)
