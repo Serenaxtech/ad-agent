@@ -242,6 +242,14 @@ class LdapConnector():
                 except UnicodeDecodeError:
                     # Fallback to hexadecimal representation
                     return value.hex()
+        # Add handling for datetime objects
+        elif hasattr(value, 'isoformat'):
+            # Convert datetime objects to ISO format string
+            return value.isoformat()
+        # Add handling for timedelta objects
+        elif hasattr(value, 'total_seconds'):
+            # Convert timedelta to total seconds
+            return int(value.total_seconds())
         else:
             return value
 
@@ -275,7 +283,7 @@ class LdapConnector():
             scope: Scope to use during the request.
 
         Returns:
-            A generator yielding records.
+            A generator yielding records or JSON string if as_json=True
         """
         attributes = self.attributes if attributes == [] else attributes
 
@@ -294,20 +302,24 @@ class LdapConnector():
                 paged_size=self.page_size,
                 generator=True,
             )
+            
+            # Process all entries immediately instead of returning a generator
+            processed_entries = []
+            for entry in entry_generator:
+                processed_entry = self.ldapQueryResult(entry)
+                if processed_entry is not None:
+                    processed_entries.append(processed_entry)
+                    
+            if as_json:
+                return json.dumps(processed_entries, default=str)
+            return processed_entries
+            
         except LDAPOperationResult as e:
             ldap_logger.info(f"LDAP query error: {e}")
-            return json.dumps([]) if as_json else iter(())
+            return json.dumps([]) if as_json else []
         except LDAPAttributeError as e:
             ldap_logger.info(f"LDAP attribute error: {e}")
-            return json.dumps([]) if as_json else iter(())
-
-        processed_generator = filter(lambda x: x is not None, map(self.ldapQueryResult, entry_generator))
-
-        if as_json:
-            entries = list(processed_generator)
-            return json.dumps(entries, default=str)
-        else:
-            return processed_generator
+            return json.dumps([]) if as_json else []
 
 
 if __name__ == '__main__':
