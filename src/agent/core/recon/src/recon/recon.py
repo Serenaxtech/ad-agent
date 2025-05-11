@@ -1,3 +1,5 @@
+from datetime import datetime
+from typing import Dict, List, Optional, Union
 import json
 import logging
 from types import MethodType
@@ -77,7 +79,7 @@ class Recon:
         def dynamic_method(
             self, 
             override_filter: Optional[str] = None,
-            override_attributes: Optional[list] = None,  # Fixed typo here
+            override_attributes: Optional[list] = None,  
             override_base: Optional[str] = None,
             override_scope: Optional[str] = None,
             as_json: Optional[bool] = None
@@ -88,7 +90,7 @@ class Recon:
             try:
                 return self.ldap.query(
                     ldapfilter=override_filter or params['ldapfilter'],
-                    attributes=override_attributes or params['attributes'],  # Fixed here
+                    attributes=override_attributes or params['attributes'], 
                     base=override_base or params['base'],
                     scope=override_scope or params['scope'],
                     as_json=as_json if as_json is not None else params['as_json']
@@ -100,7 +102,7 @@ class Recon:
         # Add type annotations dynamically
         dynamic_method.__annotations__ = {
             'override_filter': Optional[str],
-            'override_attributes': Optional[list],  # Fixed here
+            'override_attributes': Optional[list], 
             'override_base': Optional[str],
             'override_scope': Optional[str],
             'as_json': Optional[bool],
@@ -110,7 +112,51 @@ class Recon:
         # Bind the method once and track it
         setattr(self, method_name, MethodType(dynamic_method, self))
         self.dynamic_methods.append(method_name)  # Track the method name
-    
+
+    def execute_all_queries(self, as_json: bool = True) -> Union[str, Dict]:
+        """
+        Execute all available query methods and return their results.
+        
+        Args:
+            as_json (bool): Whether to return results as JSON string or dict
+            
+        Returns:
+            Union[str, Dict]: JSON string or dict containing all query results
+        """
+        recon_logger.info("Executing all available queries")
+        
+        results = {
+            "timestamp": datetime.now().isoformat(),
+            "queries_executed": 0,
+            "results": {}
+        }
+        
+        # Get list of generated query methods
+        query_methods = [m for m in dir(self) 
+                        if m.startswith('get_') and callable(getattr(self, m))]
+        
+        for method_name in query_methods:
+            try:
+                method = getattr(self, method_name)
+                query_result = method(as_json=False)  # Get raw results
+                
+                if isinstance(query_result, str):
+                    # If result is JSON string, parse it
+                    query_result = json.loads(query_result)
+                
+                results["results"][method_name] = query_result
+                results["queries_executed"] += 1
+                
+                recon_logger.debug(f"Successfully executed {method_name}")
+                
+            except Exception as e:
+                recon_logger.error(f"Error executing {method_name}: {str(e)}")
+                results["results"][method_name] = {
+                    "error": str(e),
+                    "status": "failed"
+                }
+        
+        return json.dumps(results) if as_json else results
 
 if __name__ == '__main__':
     try:
@@ -125,7 +171,7 @@ if __name__ == '__main__':
 
         # Initialize LDAP connection
         ldap_conn = LdapConnector(
-            server_string=f"ldap://{domain_config.get('ldap-server', '192.168.8.103')}",
+            server_string=f"ldap://{domain_config.get('ldap-server', '192.168.8.112')}",
             domain=domain,
             username=domain_config['username'].split('\\')[-1],  # Extract username from DOMAIN\user
             password=domain_config['password'],
