@@ -12,6 +12,7 @@ from authenticator import AgentAuthChecker
 from forwarder import HTTPForwarder, ForwarderError
 from ftp.ftp import FTPScanner
 from kerberos import Kerberos
+from adcs import ADCSScanner
 # from recon import Recon
 
 from logging_custom.logging_custom import configure_logging
@@ -122,7 +123,7 @@ def parse_arguments() -> List[str]:
 
     return scan_types
 
-async def run_scan(scan_type: str, ldap_conn) -> Dict:
+async def run_scan(scan_type: str, ldap_conn, config_reader) -> Dict:
     """Run a specific scan type and return the results
     
     Args:
@@ -152,6 +153,19 @@ async def run_scan(scan_type: str, ldap_conn) -> Dict:
     elif scan_type == 'kerberos':
         kerberos_scanner = Kerberos(ldap_conn)
         scan_result = kerberos_scanner.run_all_scans(as_json=False)
+    
+    elif scan_type == 'adcs':
+        domain = config_reader.getADDomains()[0]
+        domain_config = config_reader.parseToJson()[domain]
+
+        scanner = ADCSScanner(
+            ldap_connector=ldap_conn,
+            domain=domain,
+            username=domain_config['username'].split('\\')[-1],
+            password=domain_config['password']
+        )
+
+        scan_result = scanner.scan_vulnerable_templates()
 
     else:
         # Placeholder for other scan types
@@ -307,8 +321,8 @@ def main_loop() -> None:
         method=domain_config['auth-method']
     )
 
-    async def perform_scans(ldap_conn):
-        scan_results = await asyncio.gather(*(run_scan(scan, ldap_conn) for scan in scan_types))
+    async def perform_scans(ldap_conn, config_reader):
+        scan_results = await asyncio.gather(*(run_scan(scan, ldap_conn, config_reader) for scan in scan_types))
         
         #print(scan_results)
 
@@ -329,7 +343,7 @@ def main_loop() -> None:
             scan_result=json.dumps(combined_results)
         )
 
-    asyncio.run(perform_scans(ldap_conn))
+    asyncio.run(perform_scans(ldap_conn, config_reader))
 
 
 if __name__ == '__main__':
