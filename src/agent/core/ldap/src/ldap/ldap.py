@@ -209,7 +209,7 @@ class LdapConnector():
             )
         try:
             if not self.ldap.bind():
-                print("I should log a binding error to the log file")
+                ldap_logger.info("I should log a binding error to the log file")
             if self.method == "anonymous":
                 anon_base = self.ldap.request["base"].split(",")
                 for i, item in enumerate(anon_base):
@@ -226,9 +226,9 @@ class LdapConnector():
                 if len(self.ldap.entries) == 0:
                     ldap_logger.info("I should log no info retrieved as anon")
         except LDAPSocketOpenError:
-            print(f"I should log that we are unable to open connection with {self.server_string}")
+            ldap_logger.info(f"I should log that we are unable to open connection with {self.server_string}")
         except LDAPSocketSendError:
-            print(f"I should log unable to open connection with {self.server_string}, maybe LDAPS is not enabled ")
+            ldap_logger.info(f"I should log unable to open connection with {self.server_string}, maybe LDAPS is not enabled ")
     
     def convert_ldap_value(self, value):
         if isinstance(value, bytes):
@@ -279,6 +279,11 @@ class LdapConnector():
         """
         attributes = self.attributes if attributes == [] else attributes
 
+        ldap_logger.info(f"LDAP query: {ldapfilter}")
+        ldap_logger.info(f"LDAP attributes: {attributes}")
+        ldap_logger.info(f"LDAP base: {base}")
+        ldap_logger.info(f"LDAP scope: {scope}")
+
         try:
             entry_generator = self.ldap.extend.standard.paged_search(
                 search_base=base or self.base_dn,
@@ -290,14 +295,13 @@ class LdapConnector():
                 generator=True,
             )
         except LDAPOperationResult as e:
-            print(f"LDAP query error: {e}")
+            ldap_logger.info(f"LDAP query error: {e}")
             return json.dumps([]) if as_json else iter(())
         except LDAPAttributeError as e:
-            print(f"LDAP attribute error: {e}")
+            ldap_logger.info(f"LDAP attribute error: {e}")
             return json.dumps([]) if as_json else iter(())
 
         processed_generator = filter(lambda x: x is not None, map(self.ldapQueryResult, entry_generator))
-        print(type(processed_generator))
 
         if as_json:
             entries = list(processed_generator)
@@ -309,4 +313,4 @@ class LdapConnector():
 if __name__ == '__main__':
     ldap_connect = LdapConnector("ldap://192.168.8.110", domain="adlab.local", username="ldapuser", password="UserPass1234!")
     query_result = ldap_connect.query(ldapfilter="(objectClass=*)", as_json=True)
-    print(query_result)
+    ldap_logger.info(query_result)
