@@ -1,0 +1,70 @@
+{
+    "kerberoastable_users": [
+        {
+            "sAMAccountName": "sqlservice",
+            "servicePrincipalName": [
+                "MSSQLSvc/dbserver.adlab.local:1433",
+                "MSSQLSvc/dbserver:1433"
+            ],
+            "pwdLastSet": "133495826940000000",
+            "lastLogon": "133495827100000000",
+            "memberOf": [
+                "CN=Domain Users,CN=Users,DC=adlab,DC=local"
+            ],
+            "description": "SQL Server Service Account",
+            "dn": "CN=SQL Service,CN=Users,DC=adlab,DC=local"
+        }
+    ],
+    "asreproast_users": [
+        {
+            "sAMAccountName": "vulnuser",
+            "userAccountControl": "4194304",
+            "pwdLastSet": "133495826940000000",
+            "lastLogon": "133495827100000000",
+            "dn": "CN=Vulnerable User,CN=Users,DC=adlab,DC=local"
+        }
+    ],
+    "domain_encryption": [
+        {
+            "msDS-SupportedEncryptionTypes": "31",
+            "distinguishedName": "DC=adlab,DC=local"
+        }
+    ],
+    "unconstrained_delegation": [
+        {
+            "sAMAccountName": "DC01$",
+            "userAccountControl": "532480",
+            "servicePrincipalName": [
+                "TERMSRV/DC01",
+                "WSMAN/DC01",
+                "RestrictedKrbHost/DC01",
+                "HOST/DC01/ADLAB",
+                "HOST/DC01"
+            ],
+            "dNSHostName": "DC01.adlab.local",
+            "objectClass": "computer",
+            "dn": "CN=DC01,OU=Domain Controllers,DC=adlab,DC=local"
+        }
+    ],
+    "constrained_delegation": [
+        {
+            "sAMAccountName": "webservice",
+            "msDS-AllowedToDelegateTo": [
+                "HTTP/webserver.adlab.local",
+                "CIFS/fileserver.adlab.local"
+            ],
+            "userAccountControl": "66048",
+            "objectClass": "user",
+            "dn": "CN=Web Service,CN=Users,DC=adlab,DC=local"
+        }
+    ],
+    "resource_based_constrained_delegation": [
+        {
+            "sAMAccountName": "fileserver$",
+            "dNSHostName": "fileserver.adlab.local",
+            "msDS-AllowedToActOnBehalfOfOtherIdentity": "binary_sid_data",
+            "objectClass": "computer",
+            "dn": "CN=FILESERVER,CN=Computers,DC=adlab,DC=local"
+        }
+    ]
+}

@@ -1,0 +1,74 @@
+{
+    "scan_timestamp": "2025-01-20T15:30:45Z",
+    "domain": "adlab.local",
+    "cas": [
+        {
+            "name": "ADLAB-DC-CA",
+            "dns_name": "dc.adlab.local",
+            "ca_name": "ADLAB-DC-CA",
+            "web_enrollment": true,
+            "vulnerable_to_ntlm_relay": true
+        }
+    ],
+    "templates": [
+        {
+            "name": "User",
+            "display_name": "User Certificate",
+            "schema_version": "2",
+            "validity_period": "1 year",
+            "renewal_period": "6 weeks",
+            "owner": "ADLAB\\Domain Admins",
+            "enrollee_supplies_subject": true,
+            "client_authentication": true,
+            "enrollment_agent": false,
+            "vulnerable_aces": [
+                "ADLAB\\Domain Users - Enroll"
+            ],
+            "vulnerabilities": [
+                "ESC1 - Vulnerable to User Certificate Attack"
+            ]
+        },
+        {
+            "name": "WebServer",
+            "display_name": "Web Server Certificate",
+            "schema_version": "2",
+            "validity_period": "2 years",
+            "renewal_period": "6 weeks",
+            "owner": "ADLAB\\Domain Admins",
+            "enrollee_supplies_subject": true,
+            "client_authentication": false,
+            "enrollment_agent": false,
+            "vulnerable_aces": [],
+            "vulnerabilities": [
+                "ESC6 - Vulnerable to DNS Request Attack"
+            ]
+        }
+    ],
+    "vulnerabilities": {
+        "esc1": ["User"],
+        "esc2": [],
+        "esc3": [],
+        "esc4": [],
+        "esc5": [],
+        "esc6": ["WebServer"],
+        "esc7": [],
+        "esc8": [],
+        "other": []
+    },
+    "summary": {
+        "total_cas": 1,
+        "total_templates": 2,
+        "total_vulnerable_templates": 2,
+        "vulnerability_counts": {
+            "esc1": 1,
+            "esc2": 0,
+            "esc3": 0,
+            "esc4": 0,
+            "esc5": 0,
+            "esc6": 1,
+            "esc7": 0,
+            "esc8": 0,
+            "other": 0
+        }
+    }
+}

@@ -1,0 +1,44 @@
+{
+    "scan_timestamp": "2025-01-20T15:30:45Z",
+    "servers_scanned": 3,
+    "ftp_servers_found": 2,
+    "vulnerable_servers": 1,
+    "results": [
+        {
+            "hostname": "fileserver.adlab.local",
+            "port_open": true,
+            "anonymous_access": true,
+            "banner": "220 FileZilla Server 0.9.60 beta",
+            "ftp_bounce": true,
+            "allows_active_mode": true,
+            "allows_passive_mode": true,
+            "clear_text_credentials": true,
+            "directory_listing": [
+                "public",
+                "uploads",
+                "backup"
+            ],
+            "version": "FileZilla 0.9.60",
+            "vulnerabilities": [
+                "Anonymous Access Allowed",
+                "FTP Bounce Attack",
+                "Outdated FileZilla Server with multiple vulnerabilities"
+            ],
+            "error": null
+        },
+        {
+            "hostname": "webserver.adlab.local",
+            "port_open": true,
+            "anonymous_access": false,
+            "banner": "220 Microsoft FTP Service",
+            "ftp_bounce": false,
+            "allows_active_mode": true,
+            "allows_passive_mode": true,
+            "clear_text_credentials": true,
+            "directory_listing": [],
+            "version": "Microsoft FTP 10.0",
+            "vulnerabilities": [],
+            "error": null
+        }
+    ]
+}

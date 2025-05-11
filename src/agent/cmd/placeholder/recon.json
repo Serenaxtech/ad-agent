@@ -1,0 +1,224 @@
+{
+    "timestamp": "2025-05-11T12:12:52.193233",
+    "queries_executed": 3,
+    "results": {
+        "get_all_groups": [
+            {
+                "description": [
+                    "Members in this group cannot have their passwords replicated to any read-only domain controllers in the domain"
+                ],
+                "member": [
+                    "CN=Read-only Domain Controllers,CN=Users,DC=adlab,DC=local",
+                    "CN=Group Policy Creator Owners,CN=Users,DC=adlab,DC=local",
+                    "CN=Domain Admins,CN=Users,DC=adlab,DC=local",
+                    "CN=Cert Publishers,CN=Users,DC=adlab,DC=local",
+                    "CN=Enterprise Admins,CN=Users,DC=adlab,DC=local",
+                    "CN=Schema Admins,CN=Users,DC=adlab,DC=local",
+                    "CN=Domain Controllers,CN=Users,DC=adlab,DC=local",
+                    "CN=krbtgt,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "sAMAccountName": "Denied RODC Password Replication Group",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Denied RODC Password Replication Group,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Members of this group have access to the computed tokenGroupsGlobalAndUniversal attribute on User objects"
+                ],
+                "member": [
+                    "CN=S-1-5-9,CN=ForeignSecurityPrincipals,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "sAMAccountName": "Windows Authorization Access Group",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Windows Authorization Access Group,CN=Builtin,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "A backward compatibility group which allows read access on all users and groups in the domain"
+                ],
+                "member": [
+                    "CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "sAMAccountName": "Pre-Windows 2000 Compatible Access",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Pre-Windows 2000 Compatible Access,CN=Builtin,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Members in this group can modify group policy for the domain"
+                ],
+                "member": [
+                    "CN=Administrator,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=adlab,DC=local"
+                ],
+                "sAMAccountName": "Group Policy Creator Owners",
+                "displayName": [],
+                "dn": "CN=Group Policy Creator Owners,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Designated administrators of the domain"
+                ],
+                "member": [
+                    "CN=Administrator,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:21:07+00:00",
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=adlab,DC=local",
+                    "CN=Administrators,CN=Builtin,DC=adlab,DC=local"
+                ],
+                "sAMAccountName": "Domain Admins",
+                "displayName": [],
+                "dn": "CN=Domain Admins,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Designated administrators of the enterprise"
+                ],
+                "member": [
+                    "CN=Administrator,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:21:07+00:00",
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=adlab,DC=local",
+                    "CN=Administrators,CN=Builtin,DC=adlab,DC=local"
+                ],
+                "sAMAccountName": "Enterprise Admins",
+                "displayName": [],
+                "dn": "CN=Enterprise Admins,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Designated administrators of the schema"
+                ],
+                "member": [
+                    "CN=Administrator,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:06:10+00:00",
+                "whenChanged": "2025-02-19T14:21:07+00:00",
+                "memberOf": [
+                    "CN=Denied RODC Password Replication Group,CN=Users,DC=adlab,DC=local"
+                ],
+                "sAMAccountName": "Schema Admins",
+                "displayName": [],
+                "dn": "CN=Schema Admins,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Guests have the same access as members of the Users group by default, except for the Guest account which is further restricted"
+                ],
+                "member": [
+                    "CN=Domain Guests,CN=Users,DC=adlab,DC=local",
+                    "CN=Guest,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:02:59+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "sAMAccountName": "Guests",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Guests,CN=Builtin,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Users are prevented from making accidental or intentional system-wide changes and can run most applications"
+                ],
+                "member": [
+                    "CN=Domain Users,CN=Users,DC=adlab,DC=local",
+                    "CN=S-1-5-11,CN=ForeignSecurityPrincipals,DC=adlab,DC=local",
+                    "CN=S-1-5-4,CN=ForeignSecurityPrincipals,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:02:59+00:00",
+                "whenChanged": "2025-02-19T14:06:10+00:00",
+                "sAMAccountName": "Users",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Users,CN=Builtin,DC=adlab,DC=local"
+            },
+            {
+                "description": [
+                    "Administrators have complete and unrestricted access to the computer/domain"
+                ],
+                "member": [
+                    "CN=Domain Admins,CN=Users,DC=adlab,DC=local",
+                    "CN=Enterprise Admins,CN=Users,DC=adlab,DC=local",
+                    "CN=Administrator,CN=Users,DC=adlab,DC=local"
+                ],
+                "whenCreated": "2025-02-19T14:02:59+00:00",
+                "whenChanged": "2025-02-19T14:21:07+00:00",
+                "sAMAccountName": "Administrators",
+                "displayName": [],
+                "memberOf": [],
+                "dn": "CN=Administrators,CN=Builtin,DC=adlab,DC=local"
+            }
+        ],
+        "get_all_users": [
+            {
+                "sAMAccountName": "UBUNTUSERVER$",
+                "displayName": [],
+                "dn": "CN=ubuntuserver,CN=Computers,DC=adlab,DC=local"
+            },
+            {
+                "displayName": "asreproastable asreproastable",
+                "sAMAccountName": "asreproastable",
+                "dn": "CN=asreproastable asreproastable,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "displayName": "kerberoastuser",
+                "sAMAccountName": "kerborastable",
+                "dn": "CN=kerborastable kerborastable,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "displayName": "ldapuser ldapuser",
+                "sAMAccountName": "ldapuser",
+                "dn": "CN=ldapuser ldapuser,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "sAMAccountName": "krbtgt",
+                "displayName": [],
+                "dn": "CN=krbtgt,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "sAMAccountName": "WIN-6FPADQF6LSL$",
+                "displayName": [],
+                "dn": "CN=WIN-6FPADQF6LSL,OU=Domain Controllers,DC=adlab,DC=local"
+            },
+            {
+                "sAMAccountName": "Guest",
+                "displayName": [],
+                "dn": "CN=Guest,CN=Users,DC=adlab,DC=local"
+            },
+            {
+                "sAMAccountName": "Administrator",
+                "displayName": [],
+                "dn": "CN=Administrator,CN=Users,DC=adlab,DC=local"
+            }
+        ],
+        "get_all_windows_servers": [
+            {
+                "cn": "ubuntuserver",
+                "operatingSystem": [],
+                "dn": "CN=ubuntuserver,CN=Computers,DC=adlab,DC=local"
+            },
+            {
+                "cn": "WIN-6FPADQF6LSL",
+                "operatingSystem": "Windows Server 2019 Standard Evaluation",
+                "dn": "CN=WIN-6FPADQF6LSL,OU=Domain Controllers,DC=adlab,DC=local"
+            }
+        ]
+    }
+}

@@ -1,0 +1,63 @@
+{
+    "scan_timestamp": "2025-01-20T10:30:45.123456", 
+    "servers_scanned": 5,                            
+    "sharepoint_servers_found": 2,                  
+    "frontpage_servers_found": 1,                   
+    "servers": [
+        {
+            "hostname": "sharepoint1.adlab.local",
+            "server_type": "sharepoint", 
+            "url": "https://sharepoint1.adlab.local",
+            "version": "16.0.0.1234",
+            "is_vulnerable": false,
+            "scan_results": {
+                "target_info": {
+                    "url": "https://sharepoint1.adlab.local",
+                    "status_code": 200,
+                    "server": "Microsoft-IIS/10.0",
+                    "headers": {
+                        "Server": "Microsoft-IIS/10.0",
+                        "X-SharePointHealthScore": "0",
+                        "X-MSDAVEXT": "1"
+                    }
+                },
+                "directories": {
+                    "directories_checked": 8,
+                    "directories_found": 3,
+                    "found_directories": [
+                        {
+                            "url": "https://sharepoint1.adlab.local/_vti_bin/",
+                            "status_code": 200
+                        }
+                    ]
+                },
+                "bin_files": {
+                    "files_checked": 10,
+                    "files_found": 2,
+                    "found_files": [
+                        {
+                            "url": "https://sharepoint1.adlab.local/_vti_bin/owssvr.dll",
+                            "status_code": 200
+                        }
+                    ]
+                },
+                "private_files": {
+                    "files_checked": 19,
+                    "files_found": 0,
+                    "found_files": []
+                },
+                "credentials": {
+                    "credentials_found": false,
+                    "credential_files": []
+                },
+                "rpc_check": {
+                    "rpc_available": false,
+                    "rpc_endpoints": [],
+                    "server_version": null
+                }
+            },
+            "error": null
+        }
+    ],
+    "error": null
+}

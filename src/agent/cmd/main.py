@@ -13,6 +13,7 @@ from forwarder import HTTPForwarder, ForwarderError
 from ftp.ftp import FTPScanner
 from kerberos import Kerberos
 from adcs import ADCSScanner
+from recon import Recon
 # from recon import Recon
 
 from logging_custom.logging_custom import configure_logging
@@ -22,7 +23,7 @@ netprotect_logger = logging.getLogger(__name__)
 configure_logging(netprotect_logger, "netprotect-module")
 netprotect_logger.info("NetProtect initialized")
 
-VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap', 'ftp']
+VALID_SCAN_TYPES = ['kerberos', 'recon', 'ldap', 'ftp', 'adcs']
 
 def normalize_proxy_value(value: Optional[str]) -> Optional[str]:
     """
@@ -147,8 +148,9 @@ async def run_scan(scan_type: str, ldap_conn, config_reader) -> Dict:
             scan_result = {"error": str(e)}
     
     elif scan_type == 'ldap':
-        scan_result = ldap_conn.query(ldapfilter="(objectClass=*)", as_json=True)
-        print(scan_result)
+        scan_result = ldap_conn.query(ldapfilter="(objectClass=*)", as_json=False)
+        with open('ldap.json', 'w') as f:
+            json.dump(scan_result, f, indent=4)
 
     elif scan_type == 'kerberos':
         kerberos_scanner = Kerberos(ldap_conn)
@@ -158,14 +160,22 @@ async def run_scan(scan_type: str, ldap_conn, config_reader) -> Dict:
         domain = config_reader.getADDomains()[0]
         domain_config = config_reader.parseToJson()[domain]
 
-        scanner = ADCSScanner(
+        ldap_scanner = ADCSScanner(
             ldap_connector=ldap_conn,
+        )
+
+        scan_result = ldap_scanner.scan_vulnerable_templates(
             domain=domain,
             username=domain_config['username'].split('\\')[-1],
             password=domain_config['password']
         )
 
-        scan_result = scanner.scan_vulnerable_templates()
+    elif scan_type == 'recon':
+        recon_scanner = Recon(config=config_reader, ldap_connector=ldap_conn)
+        scan_result = recon_scanner.execute_all_queries(as_json=False)
+        with open('recon.json', 'w') as f:
+            json.dump(scan_result, f, indent=4)
+
 
     else:
         # Placeholder for other scan types
