@@ -26,5 +26,12 @@ poetry run python .\main.py -s module1,module2,module3,...
 poetry run python .\main.py -s recon,ldap,ftp
 ~~~
 
+##  For Demo:
+~~~bash
+poetry run python .\main-demo.py -s module1,module2,module3,...
+## Example:
+poetry run python .\main-demo.py -s recon,ldap,ftp
+~~~
+
 ## Agent Auth Process:
 <img src="docs/images/AgentAuthProcess.svg" alt="SVG Image" width="600" />
