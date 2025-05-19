@@ -18,5 +18,13 @@ poetry run pytest --cov=my_package --cov-report=term-missing
 poetry run sphinx-apidoc -o docs/source src/
 poetry run make -C docs html
 
+# Run The Agent:
+
+~~~bash
+poetry run python .\main.py -s module1,module2,module3,...
+## Example:
+poetry run python .\main.py -s recon,ldap,ftp
+~~~
+
 ## Agent Auth Process:
 <img src="docs/images/AgentAuthProcess.svg" alt="SVG Image" width="600" />
